@@ -1,0 +1,17 @@
+
+
+    // Conditions
+    def c1 = {dev.experience>1}
+    def c2 = {dev.experience<3}
+    // Actions
+    def a1 = {dev.level="Junior"}
+    if c1 && c2 then a1
+
+
+
+    def c1={dev, experience -> dev.experience > experience}
+    def c2={dev, experience -> dev.experience < experience}
+    def a1={dev, level -> dev.level = level}
+    def developer = new Developer(name:"Peter",experience:2)
+    if c1(developer,1) && c2(developer,3) then a1(developer,"Junior")
+

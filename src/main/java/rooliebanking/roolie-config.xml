@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Roolie rules engine configuration file.
+  http://roolie.sourceforge.net/
+-->
+<!--
+    此配置文件配置规则信息 和 入口数据与规则的关联关系,一种数据可以关联多个规则.
+    在定义具体规则的时候,并不是直接将规则信息放入配置文件,相应的规则是引用的java文件.
+    而把一些可变自定义的参数提取出来,流在配置文件中进行配置.
+-->
+
+<roolie-rules-config>
+
+  <!--
+    Definitions of complex rules composed of the basic rules defined
+    in rule-implementations.
+    Rules are evaluated in the order they are defined.
+  -->
+  <rule-definitions>
+
+    <!--
+      The user can deposit funds if they are a member of "Our Bank."
+    -->
+    <rule-def name="userCanDepositFunds">
+      <rule name="isMemberOfOurBank" />
+    </rule-def>
+
+    <!--
+      The user can withdraw funds if:
+      * They are a member of "Our Bank" OR "Sister Bank"
+      * AND They have sufficient funds available to cover the withdrawl amount.
+      * AND The withdrawl would NOT exceed their daily limit.
+    -->
+
+    <!--入力参数同规则的关联关系,支持一对多-->
+    <rule-def name="userCanWithdrawFunds">
+      <rule name="isMemberOfOurBank" or-next-rule="true" />
+      <rule name="isMemberOfSisterBank" />
+      <rule name="sufficientFundsAvailable" />
+      <rule name="exceedsDailyLimit" inverse="true" />
+    </rule-def>
+
+  </rule-definitions>
+
+  <!--
+    Rule implementations which can be chained together in rule-definitions.
+    They can also be used by name directly in RulesEngine.
+  -->
+  <rule-implementations>
+
+    <!--规则和类的关联关系-->
+    <rule-impl name="sufficientFundsAvailable" class="rooliebanking.rule.SufficientFundsAvailable" />
+
+    <rule-impl name="exceedsDailyLimit" class="rooliebanking.rule.ExceedsDailyWithdrawlLimit" >
+      <property name="dailyWithdrawlLimit" value="700" />
+    </rule-impl>
+
+    <rule-impl name="isMemberOfOurBank" class="rooliebanking.rule.UserIsBankMember">
+      <property name="bankMembers">
+        <list>
+          <list-item value="Oscar" />
+          <list-item value="Olivia" />
+          <list-item value="Orion" />
+        </list>
+      </property>
+      <property name="bankName" value="Our Bank" />
+    </rule-impl>
+
+    <rule-impl name="isMemberOfSisterBank" class="rooliebanking.rule.UserIsBankMember">
+      <property name="bankMembers">
+        <list>
+          <list-item value="Sylvia" />
+          <list-item value="Samuel" />
+          <list-item value="Susan" />
+        </list>
+      </property>
+      <property name="bankName" value="Sister Bank" />
+    </rule-impl>
+
+  </rule-implementations>
+
+  <!--
+    Configurations for Roolie itself.
+  -->
+  <roolie-config>
+
+    <!--
+      Override for the default RuleFactory implementation.
+      Class must implement org.roolie.RuleFactory.
+    -->
+    <rule-factory-class class="org.roolie.impl.DefaultRuleFactory" />
+
+    <!--
+      Override for the default RuleEvaluator implementation.
+      Class must implement org.roolie.RuleEvaluator.
+    -->
+    <rule-evaluator-class class="org.roolie.impl.DefaultRuleEvaluator" />
+
+  </roolie-config>
+
+</roolie-rules-config>
